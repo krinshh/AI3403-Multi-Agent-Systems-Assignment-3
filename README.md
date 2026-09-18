@@ -33,9 +33,6 @@ pip install numpy matplotlib scipy networkx
 ```bash
 python problem1_name_formation.py
 ```
-**Outputs generated:**
-- `name_formation_krinsh.gif` (631 frames at 30 FPS animation)
-- `problem1_name_formation_snapshots.png` (High-resolution snapshot grid)
 
 ---
 
@@ -51,8 +48,6 @@ python problem1_name_formation.py
 ```bash
 python problem2_target_tracking.py
 ```
-**Outputs generated:**
-- `problem2_target_tracking.png` (3D tracking trajectory and error norm plots)
 
 ---
 
@@ -68,8 +63,6 @@ python problem2_target_tracking.py
 ```bash
 python problem3_task_allocation_admm.py
 ```
-**Outputs generated:**
-- `problem3_task_allocation_admm.png` (Communication graph, convergence diagnostics, and binary task allocation heatmaps)
 
 ---
 
@@ -87,21 +80,14 @@ python problem3_task_allocation_admm.py
 ```bash
 python problem4_lasso_admm.py
 ```
-**Outputs generated:**
-- `problem4_lasso_admm.png` (Reconstruction stem plot, residual convergence, objective descent, and soft-thresholding shrinkage curve)
-
----
-
 ## Repository Structure
-```
-├── README.md                              # Repository documentation with embedded animation
-├── name_formation_krinsh.gif              # Problem 1 recorded animation video (KRINSH sequence)
-├── problem1_name_formation.py             # Problem 1 collision-free formation control script
-├── problem1_name_formation_snapshots.png  # Problem 1 letter snapshots (K -> R -> I -> N -> S -> H)
-├── problem2_target_tracking.py            # Problem 2 distributed drone target tracking script
-├── problem2_target_tracking.png           # Problem 2 3D tracking & error plots
-├── problem3_task_allocation_admm.py       # Problem 3 ADMM task allocation script
-├── problem3_task_allocation_admm.png      # Problem 3 communication & heatmap plots
-├── problem4_lasso_admm.py                 # Problem 4 LASSO closed-form ADMM script
-└── problem4_lasso_admm.png                # Problem 4 convergence & shrinkage plots
+
+```text
+.
+├── README.md                      # Assignment documentation & animation preview
+├── name_formation_krinsh.gif      # Problem 1 recorded animation video (KRINSH sequence)
+├── problem1_name_formation.py     # Problem 1 collision-free formation control script
+├── problem2_target_tracking.py    # Problem 2 distributed drone target tracking script
+├── problem3_task_allocation_admm.py # Problem 3 ADMM task allocation script
+└── problem4_lasso_admm.py         # Problem 4 LASSO closed-form ADMM script
 ```
