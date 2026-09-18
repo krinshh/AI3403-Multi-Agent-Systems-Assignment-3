@@ -37,12 +37,14 @@ def project_hypersimplex(v, b, tol=1e-9):
 # ==============================================================================
 # 2. ADMM Solver for Multi-Agent Task Allocation
 # ==============================================================================
-def solve_task_allocation_admm(C, b, max_iters=150, rho=2.5):
+def solve_task_allocation_admm(C, b, W=None, max_iters=150, rho=0.35, n_cons_iters=25):
     """
     Solves the relaxed task allocation problem:
         min_{x_1, ..., x_N} sum_{i=1}^N c_i^T x_i
         s.t. sum_{i=1}^N x_i = 1_M,  x_i in {x in [0, 1]^M : sum(x) = b_i}
-    via ADMM Sharing Algorithm (Boyd et al., Section 7).
+    via Distributed ADMM Sharing Algorithm.
+    Average demand x_mean is computed distributedly over graph G via 
+    Metropolis-Hastings weight matrix W.
     """
     N, M = C.shape
     x = np.zeros((N, M))
@@ -57,17 +59,31 @@ def solve_task_allocation_admm(C, b, max_iters=150, rho=2.5):
     
     for k in range(max_iters):
         x_prev = x.copy()
-        x_mean = np.mean(x, axis=0)
+        
+        # Distributed Average Consensus over graph G
+        if W is not None:
+            w_cons = x.copy()
+            for _ in range(n_cons_iters):
+                w_cons = W @ w_cons
+            x_mean = np.mean(w_cons, axis=0)
+        else:
+            x_mean = np.mean(x, axis=0)
         
         # 1. Local Primal x_i Updates
         for i in range(N):
             # Gradient of local quadratic augmented terms
-            # v_i = x_i - (1/rho)*(c_i + lam) - (x_mean - (1/N)*1_M)
-            v_i = x[i] - (1.0 / rho) * (C[i] + lam) - (x_mean - (1.0 / N) * np.ones(M))
+            # v_i = x_i - (1/rho)*(c_i + lam) - (N*x_mean - 1_M)
+            v_i = x[i] - (1.0 / rho) * (C[i] + lam) - (N * x_mean - np.ones(M))
             x[i] = project_hypersimplex(v_i, b[i])
             
-        # 2. Average Network Demand
-        x_mean_new = np.mean(x, axis=0)
+        # 2. Average Network Demand via Distributed Consensus
+        if W is not None:
+            w_cons_new = x.copy()
+            for _ in range(n_cons_iters):
+                w_cons_new = W @ w_cons_new
+            x_mean_new = np.mean(w_cons_new, axis=0)
+        else:
+            x_mean_new = np.mean(x, axis=0)
         
         # 3. Dual Multiplier Update
         r_primal = N * x_mean_new - np.ones(M)  # Primal residual: sum(x_i) - 1_M
@@ -97,6 +113,16 @@ while True:
     if nx.is_connected(G):
         break
 
+# Compute Metropolis-Hastings Doubly Stochastic Matrix W for graph G
+Adj = nx.to_numpy_array(G)
+degrees = np.sum(Adj, axis=1)
+W_matrix = np.zeros((N, N))
+for i in range(N):
+    for j in range(N):
+        if i != j and Adj[i, j] > 0:
+            W_matrix[i, j] = 1.0 / (max(degrees[i], degrees[j]) + 1.0)
+    W_matrix[i, i] = 1.0 - np.sum(W_matrix[i, :])
+
 # Capacity vector b with sum(b) = M = 15
 b_capacities = np.array([3, 2, 4, 1, 3, 2], dtype=int)
 assert np.sum(b_capacities) == M, "Sum of capacities must equal total tasks M"
@@ -114,9 +140,9 @@ for i in range(N):
     specialist_tasks = [((N - 1 - i) * 2 + k) % M for k in range(3)]
     C_matrix_2[i, specialist_tasks] = np.random.uniform(1.5, 5.0, size=len(specialist_tasks))
 
-# Solve with ADMM for both cost matrices
-x_sol_1, obj_1, prim_1, dual_1 = solve_task_allocation_admm(C_matrix_1, b_capacities, max_iters=160, rho=3.0)
-x_sol_2, obj_2, prim_2, dual_2 = solve_task_allocation_admm(C_matrix_2, b_capacities, max_iters=160, rho=3.0)
+# Solve with Distributed ADMM over Graph G for both cost matrices
+x_sol_1, obj_1, prim_1, dual_1 = solve_task_allocation_admm(C_matrix_1, b_capacities, W=W_matrix, max_iters=160, rho=0.35)
+x_sol_2, obj_2, prim_2, dual_2 = solve_task_allocation_admm(C_matrix_2, b_capacities, W=W_matrix, max_iters=160, rho=0.35)
 
 # Centralized LP ground truth for Cost Matrix 1
 c_flat = C_matrix_1.flatten()

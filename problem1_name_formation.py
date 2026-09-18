@@ -86,8 +86,8 @@ for i in range(N):
         while np.linalg.norm(p_init[i] - p_init[j]) < 0.20:
             p_init[i] = np.random.uniform(-1.5, 1.5, size=2)
 
-# 4. Strict Safety-Constrained Predictive Velocity Controller with Priority Deconfliction
-d_safe = 0.140        # Hard safety radius (guaranteed separation between all agents)
+# 4. Predictive Velocity Controller with Priority Deconfliction
+d_safe = 0.140        # Safety distance threshold
 v_max = 0.035         # Maximum allowable speed per step (bounded velocity)
 
 steps_transit = 80    # Constant-speed smooth glide steps
@@ -166,12 +166,13 @@ for letter_idx, (char, d_raw) in enumerate(letters):
         p_curr = p_next.copy()
         trajectory_history.append(p_curr.copy())
         
-    # Hold Phase: Fine stabilization at exact target letter vertices with active collision checking
+    # Hold Phase: Fine stabilization at exact target letter vertices
     for step in range(steps_hold):
         p_next = p_curr.copy()
         for i in range(N):
             err = d_target[i] - p_curr[i]
             if np.linalg.norm(err) > 1e-4:
+                # Approach waypoint with safety check
                 step_corr = 0.25 * err
                 cand_pos = p_curr[i] + step_corr
                 safe = True
@@ -185,14 +186,16 @@ for letter_idx, (char, d_raw) in enumerate(letters):
                         break
                 if safe:
                     p_next[i] = cand_pos
+                # If unsafe, p_next[i] remains p_curr[i] (holds position safely)
             else:
+                # Already at target waypoint (distance <= 1e-4): snap exactly
                 p_next[i] = d_target[i]
         p_curr = p_next.copy()
         trajectory_history.append(p_curr.copy())
 
 trajectory_history = np.array(trajectory_history)
 total_frames = len(trajectory_history)
-print(f"Generated Strict Safety-Constrained Trajectory: {total_frames} frames across 6 letters (KRINSH).", flush=True)
+print(f"Generated Formation Trajectory: {total_frames} frames across 6 letters (KRINSH).", flush=True)
 
 # 5. Verification: Compute minimum pairwise distance across all frames
 min_dist_overall = float('inf')

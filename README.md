@@ -15,19 +15,19 @@ pip install numpy matplotlib scipy networkx
 
 ---
 
-## Problem 1: Strict Collision-Free Multi-Agent Name Formation Control (`KRINSH`)
+## Problem 1: Multi-Agent Name Formation Control (`KRINSH`)
 
-### Guaranteed Collision-Free Name Formation Animation (`K -> R -> I -> N -> S -> H`)
+### Name Formation Animation (`K -> R -> I -> N -> S -> H`)
 ![Multi-Agent Name Formation Animation](name_formation_krinsh.gif)
 
 ### Key Highlights
-- **Swarm Size:** $N = 20$ autonomous agents connected over an Erdős–Rényi communication graph $\mathcal{G}(\mathcal{V}, \mathcal{E})$ with $p = 0.35$ ($|E| = 71$ links).
+- **Swarm Size:** $N = 20$ autonomous agents connected over an Erdős–Rényi communication graph $\mathcal{G}(\mathcal{V}, \mathcal{E})$ with $p = 0.35$ ($|E| = 69$ links).
 - **Target Letter Sequence:** **`K` $\to$ `R` $\to$ `I` $\to$ `N` $\to$ `S` $\to$ `H`** (displaying name letter by letter).
 - **Control Strategy:**
   1. **Hungarian Bipartite Matching:** Optimal assignment of target coordinates to minimize total kinetic transit distance and eliminate path-crossing conflicts.
-  2. **Predictive Safety Filter:** Sequential priority deconfliction with multi-directional lateral velocity evasion guaranteeing pairwise separation ($d_{\min} = 0.1400 \ge d_{\text{safe}} = 0.140$).
+  2. **Predictive Safety Filter:** Sequential priority deconfliction with multi-directional lateral velocity evasion maintaining safe separation ($d_{\min} = 0.1400 \ge d_{\text{safe}} = 0.140$).
   3. **Smooth Gliding:** Bounded cruising speed ($v_{\max} = 0.035$) with stable letter hold phases.
-- **Verification Telemetry:** **0 collisions** across all 631 transition frames.
+- **Verification Telemetry:** **0 collisions** verified across all 631 transition frames.
 
 ### How to Run Problem 1
 ```bash
@@ -57,7 +57,7 @@ python problem2_target_tracking.py
 - **Problem Setup:** $N = 6$ agents collaboratively allocating $M = 15$ tasks with capacity constraints $b = [3, 2, 4, 1, 3, 2]^\top$ ($\sum_{i=1}^6 b_i = 15$).
 - **Mathematical Theory:** Continuous linear relaxation onto capped hypersimplices $\mathcal{X}_i = \{x_i \in [0, 1]^M : \mathbf{1}^\top x_i = b_i\}$. By **Total Unimodularity (TUM)**, extreme points are guaranteed $\{0, 1\}$ integer-valued (zero integrality gap).
 - **ADMM Sharing Algorithm:** Decoupled local hypersimplex projections $\Pi_{\mathcal{X}_i}(v_i^k)$ computed in $\mathcal{O}(M)$ via scalar threshold clipping + dual shadow price updates.
-- **Results:** Final ADMM Cost $= 66.7236$ (matches Centralized Linear Program exactly with primal residual $0.00$).
+- **Results:** Final ADMM Cost $= 66.7236$ (matches Centralized Linear Program exactly with primal residual $3.48 \times 10^{-15}$).
 
 ### How to Run Problem 3
 ```bash
@@ -80,6 +80,9 @@ python problem3_task_allocation_admm.py
 ```bash
 python problem4_lasso_admm.py
 ```
+
+---
+
 ## Repository Structure
 
 ```text
